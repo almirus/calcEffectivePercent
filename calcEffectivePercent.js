@@ -1,5 +1,5 @@
 calcEffectivePercent : function(resultData){
-	// Базовый период (БП)
+	// Р‘Р°Р·РѕРІС‹Р№ РїРµСЂРёРѕРґ (Р‘Рџ)
 	var getBP = function (arr) {
 		var res = false,
 			resCount = 0;
@@ -23,7 +23,7 @@ calcEffectivePercent : function(resultData){
 		}
 		return res;
 	};
-	// разница в днях
+	// СЂР°Р·РЅРёС†Р° РІ РґРЅСЏС…
 	var getDaysDiff = function(dates){
 		var datesDiff = [];
 		for (var i = 1; i < dates.length; i++) {
@@ -41,7 +41,7 @@ calcEffectivePercent : function(resultData){
 
 		for(i = 1; i < sum_arr.length; i++)
 		{
-			// основная формула ПСК после 2014г
+			// РѕСЃРЅРѕРІРЅР°СЏ С„РѕСЂРјСѓР»Р° РџРЎРљ РїРѕСЃР»Рµ 2014Рі
 			FXi		= sum_arr[i]/((1+e_arr[i]*x)*Math.pow(1+x, q_arr[i]));
 			dFdXi	= -sum_arr[i]*q_arr[i]/((1+e_arr[i]*x)*Math.pow(1+x,q_arr[i]+1));
 			sumFx 	= sumFx + FXi;
@@ -49,7 +49,7 @@ calcEffectivePercent : function(resultData){
 		}
 		return sumFx/sumFxDx;
 	};
-	// ищем решение методом ньютона
+	// РёС‰РµРј СЂРµС€РµРЅРёРµ РјРµС‚РѕРґРѕРј РЅСЊСЋС‚РѕРЅР°
 	var searchRootNewton = function(x1, e, sum_arr, e_arr, q_err)
 	{
 		var x, a, j;
@@ -65,25 +65,25 @@ calcEffectivePercent : function(resultData){
 	var sum_arr = [];
 	var date_arr = [];
 	var i;
-	// переписываем данные в "удобные" массивы
-	// resultData содержит Даты платежей (в строковом виде) и Суммы платежей
+	// РїРµСЂРµРїРёСЃС‹РІР°РµРј РґР°РЅРЅС‹Рµ РІ "СѓРґРѕР±РЅС‹Рµ" РјР°СЃСЃРёРІС‹
+	// resultData СЃРѕРґРµСЂР¶РёС‚ Р”Р°С‚С‹ РїР»Р°С‚РµР¶РµР№ (РІ СЃС‚СЂРѕРєРѕРІРѕРј РІРёРґРµ) Рё РЎСѓРјРјС‹ РїР»Р°С‚РµР¶РµР№
 	for (i = 0; i < resultData.paymentShedule['dates'].length; i++) {
 		sum_arr.push(+resultData.paymentShedule['epPSK'][i]);
 		var date = resultData.paymentShedule['dates'][i].split('.');
 		date_arr.push(new Date(date[2],date[1]-1,date[0]));
 	}
 
-	var m = date_arr.length; // число платежей
-	var datesDiff = getDaysDiff(date_arr); // массив разниц в днях
-	//Считаем базовый период bp
+	var m = date_arr.length; // С‡РёСЃР»Рѕ РїР»Р°С‚РµР¶РµР№
+	var datesDiff = getDaysDiff(date_arr); // РјР°СЃСЃРёРІ СЂР°Р·РЅРёС† РІ РґРЅСЏС…
+	//РЎС‡РёС‚Р°РµРј Р±Р°Р·РѕРІС‹Р№ РїРµСЂРёРѕРґ bp
 	var bp=getBP(datesDiff);
-	//Считаем число базовых периодов в году:
+	//РЎС‡РёС‚Р°РµРј С‡РёСЃР»Рѕ Р±Р°Р·РѕРІС‹С… РїРµСЂРёРѕРґРѕРІ РІ РіРѕРґСѓ:
 	var cbp = 365 / bp;
-	//посчитаем Ек и Qк для каждого платежа
+	//РїРѕСЃС‡РёС‚Р°РµРј Р•Рє Рё QРє РґР»СЏ РєР°Р¶РґРѕРіРѕ РїР»Р°С‚РµР¶Р°
 	var e = [];
 	var q = [];
 	var k;
-	// пропускаем нулевой интервал и считаем Е[к] и Q[к]
+	// РїСЂРѕРїСѓСЃРєР°РµРј РЅСѓР»РµРІРѕР№ РёРЅС‚РµСЂРІР°Р» Рё СЃС‡РёС‚Р°РµРј Р•[Рє] Рё Q[Рє]
 	for (k = 1; k < m; k++) {
 		e[k] = (((date_arr[k] - date_arr[0])/ (24 * 60 * 60 * 1000)) % bp) / bp;
 		q[k] = Math.floor(((date_arr[k] - date_arr[0])/ (24 * 60 * 60 * 1000)) / bp);
@@ -92,6 +92,6 @@ calcEffectivePercent : function(resultData){
 	q[0] = 0;
 
 	i = Math.abs(searchRootNewton(0,0.00001,sum_arr,e,q));
-	//считаем ПСК с точностью 3 числа после запятой
+	//СЃС‡РёС‚Р°РµРј РџРЎРљ СЃ С‚РѕС‡РЅРѕСЃС‚СЊСЋ 3 С‡РёСЃР»Р° РїРѕСЃР»Рµ Р·Р°РїСЏС‚РѕР№
 	return Math.floor(i * cbp * 100 * 1000) / 1000;
 }
