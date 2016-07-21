@@ -1,2 +1,2 @@
 # calcEffectivePercent
-Рассчет ПСК (Полная стоимость кредита ) на JavaScript
+Расчет ПСК (Полная стоимость кредита ) на JavaScript
